@@ -1,0 +1,64 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("NEON_DATABASE_URL")
+}
+
+model Link {
+  id          String       @id @default(cuid())
+  code        String       @unique @db.VarChar(8)
+  url         String
+  clicks      Int          @default(0)
+  lastClicked DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  clickEvents LinkClick[]
+
+  @@index([code])
+}
+
+model QRCode {
+  id          String      @id @default(cuid())
+  code        String      @unique @db.VarChar(8)
+  url         String
+  scans       Int         @default(0)
+  lastScanned DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  scanEvents  QRScan[]
+
+  @@index([code])
+}
+
+model LinkClick {
+  id          String   @id @default(cuid())
+  linkCode    String
+  link        Link     @relation(fields: [linkCode], references: [code], onDelete: Cascade)
+  ipAddress   String?
+  userAgent   String?
+  referer     String?
+  country     String?
+  city        String?
+  clickedAt   DateTime @default(now())
+
+  @@index([linkCode])
+  @@index([clickedAt])
+}
+
+model QRScan {
+  id          String   @id @default(cuid())
+  qrCode      String
+  qr          QRCode   @relation(fields: [qrCode], references: [code], onDelete: Cascade)
+  ipAddress   String?
+  userAgent   String?
+  referer     String?
+  country     String?
+  city        String?
+  scannedAt   DateTime @default(now())
+
+  @@index([qrCode])
+  @@index([scannedAt])
+}
