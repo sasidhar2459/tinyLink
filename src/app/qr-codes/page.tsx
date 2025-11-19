@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import QRCode from "qrcode";
-import { Search, Calendar, SlidersHorizontal, Download, MoreHorizontal, Edit, BarChart3, Loader2, QrCode as QrCodeIcon, Share2, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Calendar, Download, MoreHorizontal, Edit, BarChart3, Loader2, QrCode as QrCodeIcon, Share2, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface QRCodeData {
@@ -26,6 +26,7 @@ export default function QRCodesPage() {
   const [editingQR, setEditingQR] = useState<QRCodeData | null>(null);
   const [editUrl, setEditUrl] = useState("");
   const [editCode, setEditCode] = useState("");
+  const [deleteConfirmCode, setDeleteConfirmCode] = useState<string | null>(null);
   const canvasRefs = useRef<{ [key: string]: HTMLCanvasElement | null }>({});
   const itemsPerPage = 3;
 
@@ -85,10 +86,6 @@ export default function QRCodesPage() {
   };
 
   const handleDelete = async (code: string) => {
-    if (!confirm("Are you sure you want to delete this QR code?")) {
-      return;
-    }
-
     try {
       const response = await fetch(`/api/qr-codes/${code}`, {
         method: "DELETE",
@@ -101,6 +98,7 @@ export default function QRCodesPage() {
       setQRCodes(qrCodes.filter(qr => qr.code !== code));
       toast.success("QR code deleted successfully!");
       setShowMoreOptions(null);
+      setDeleteConfirmCode(null);
     } catch (err) {
       toast.error("Failed to delete QR code. Please try again.");
     }
@@ -353,7 +351,10 @@ export default function QRCodesPage() {
                           <div className="absolute right-0 mt-2 w-40 sm:w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
                             <div className="py-1">
                               <button
-                                onClick={() => handleDelete(qrCode.code)}
+                                onClick={() => {
+                                  setShowMoreOptions(null);
+                                  setDeleteConfirmCode(qrCode.code);
+                                }}
                                 className="flex items-center gap-2 w-full px-3 sm:px-4 py-2 text-xs sm:text-sm text-red-600 hover:bg-red-50"
                               >
                                 <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -467,6 +468,32 @@ export default function QRCodesPage() {
                 className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
               >
                 Update QR Code
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmCode && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 max-w-[340px] sm:max-w-md w-full">
+            <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-2 sm:mb-3">Delete QR Code</h2>
+            <p className="text-sm sm:text-base text-slate-600 mb-4 sm:mb-6">
+              Are you sure you want to delete this QR code? This action cannot be undone.
+            </p>
+            <div className="flex gap-2 sm:gap-3 justify-end">
+              <button
+                onClick={() => setDeleteConfirmCode(null)}
+                className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-md border border-slate-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDelete(deleteConfirmCode)}
+                className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md"
+              >
+                Delete
               </button>
             </div>
           </div>

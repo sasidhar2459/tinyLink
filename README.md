@@ -42,7 +42,7 @@ A modern, feature-rich URL shortener built with Next.js, similar to bit.ly. Shor
 1. **Clone the repository**
    ```bash
    git clone <your-repo-url>
-   cd my-app
+   cd aganitha_test_tinyLink
    ```
 
 2. **Install dependencies**
@@ -59,7 +59,7 @@ A modern, feature-rich URL shortener built with Next.js, similar to bit.ly. Shor
 
    Update `.env` with your actual values:
    ```env
-   DATABASE_URL="postgresql://username:password@host:5432/database?sslmode=require"
+   NEON_DATABASE_URL="postgresql://username:password@host:5432/database?sslmode=require"
    NEXT_PUBLIC_BASE_URL="http://localhost:3000"
    ```
 
@@ -83,25 +83,25 @@ A modern, feature-rich URL shortener built with Next.js, similar to bit.ly. Shor
 ## Project Structure
 
 ```
-my-app/
+aganitha_test_tinyLink/
 ├── src/
 │   ├── app/                      # Next.js App Router
 │   │   ├── api/                  # API Routes
 │   │   │   ├── links/            # Link endpoints
 │   │   │   └── qr-codes/         # QR code endpoints
 │   │   ├── [code]/               # Dynamic redirect route
-│   │   ├── code/[code]/          # Stats page for individual links
 │   │   ├── analytics/            # Analytics dashboard
+│   │   │   └── [code]/           # Stats page for individual links
 │   │   ├── links/                # Links management page
 │   │   ├── qr-codes/             # QR codes page
 │   │   ├── healthz/              # Health check endpoint
+│   │   ├── layout.tsx            # Root layout
 │   │   └── page.tsx              # Dashboard (home page)
 │   │
 │   ├── components/               # React components
-│   │   ├── link-form.tsx         # Form for creating links
+│   │   ├── link-form.tsx         # Form for creating links/QR codes
 │   │   ├── links-table.tsx       # Table displaying links
 │   │   ├── qr-codes-table.tsx    # Table displaying QR codes
-│   │   ├── stats-card.tsx        # Statistics display
 │   │   ├── sidebar.tsx           # Navigation sidebar
 │   │   └── header.tsx            # Top header
 │   │
@@ -121,7 +121,6 @@ my-app/
 │   └── schema.prisma             # Database schema
 │
 └── public/                       # Static assets
-    └── assets/                   # Images, icons
 ```
 
 ## API Endpoints
@@ -161,36 +160,75 @@ my-app/
 | `/links` | Links management page |
 | `/qr-codes` | QR codes page |
 | `/analytics` | Analytics overview |
-| `/code/:code` | Stats page for individual link |
-| `/settings` | Application settings |
+| `/analytics/:code` | Stats page for individual link/QR code |
 
 ## Database Schema
 
 ### Link Model
 ```prisma
 model Link {
-  id          String      @id @default(cuid())
-  code        String      @unique @db.VarChar(8)
+  id          String       @id @default(cuid())
+  code        String       @unique @db.VarChar(8)
   url         String
-  clicks      Int         @default(0)
+  clicks      Int          @default(0)
   lastClicked DateTime?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
   clickEvents LinkClick[]
+
+  @@index([code])
 }
 ```
 
 ### QRCode Model
 ```prisma
 model QRCode {
-  id          String    @id @default(cuid())
-  code        String    @unique @db.VarChar(8)
+  id          String      @id @default(cuid())
+  code        String      @unique @db.VarChar(8)
   url         String
-  scans       Int       @default(0)
+  scans       Int         @default(0)
   lastScanned DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
   scanEvents  QRScan[]
+
+  @@index([code])
+}
+```
+
+### LinkClick Model (Advanced Analytics)
+```prisma
+model LinkClick {
+  id          String   @id @default(cuid())
+  linkCode    String
+  link        Link     @relation(fields: [linkCode], references: [code], onDelete: Cascade)
+  ipAddress   String?
+  userAgent   String?
+  referer     String?
+  country     String?
+  city        String?
+  clickedAt   DateTime @default(now())
+
+  @@index([linkCode])
+  @@index([clickedAt])
+}
+```
+
+### QRScan Model (Advanced Analytics)
+```prisma
+model QRScan {
+  id          String   @id @default(cuid())
+  qrCode      String
+  qr          QRCode   @relation(fields: [qrCode], references: [code], onDelete: Cascade)
+  ipAddress   String?
+  userAgent   String?
+  referer     String?
+  country     String?
+  city        String?
+  scannedAt   DateTime @default(now())
+
+  @@index([qrCode])
+  @@index([scannedAt])
 }
 ```
 
@@ -223,7 +261,7 @@ model QRCode {
    - Go to [vercel.com](https://vercel.com)
    - Import your GitHub repository
    - Add environment variables:
-     - `DATABASE_URL`
+     - `NEON_DATABASE_URL`
      - `NEXT_PUBLIC_BASE_URL`
    - Deploy!
 
@@ -238,7 +276,7 @@ model QRCode {
 1. Create a free account at [neon.tech](https://neon.tech)
 2. Create a new project
 3. Copy the connection string
-4. Add to `.env` as `DATABASE_URL`
+4. Add to `.env` as `NEON_DATABASE_URL`
 
 ## Environment Variables
 
@@ -246,7 +284,7 @@ Create a `.env` file in the root directory with the following variables:
 
 ```env
 # Database URL from Neon or your PostgreSQL provider
-DATABASE_URL="postgresql://username:password@host:5432/database?sslmode=require"
+NEON_DATABASE_URL="postgresql://username:password@host:5432/database?sslmode=require"
 
 # Base URL of your application
 # Local: http://localhost:3000
@@ -374,5 +412,5 @@ Created with assistance from AI tools (ChatGPT/Claude) for the Aganitha take-hom
 
 ---
 
-**Live Demo**: [Add your Vercel URL here]
-**GitHub**: [Add your repo URL here]
+**Live Demo**: https://tiny-link-kappa.vercel.app/
+**GitHub**: https://github.com/sasidhar2459/tinyLink.git

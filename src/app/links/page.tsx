@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Search, Calendar, SlidersHorizontal, List, LayoutGrid, MoreHorizontal, Edit, Share2, BarChart3, Link as LinkIcon, Copy, Trash2, QrCode, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Calendar, MoreHorizontal, Edit, Share2, BarChart3, Link as LinkIcon, Copy, Trash2, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface LinkData {
@@ -25,6 +25,7 @@ export default function LinksPage() {
   const [editUrl, setEditUrl] = useState("");
   const [editCode, setEditCode] = useState("");
   const [showMoreOptions, setShowMoreOptions] = useState<string | null>(null);
+  const [deleteConfirmCode, setDeleteConfirmCode] = useState<string | null>(null);
   const itemsPerPage = 3;
 
   useEffect(() => {
@@ -54,10 +55,6 @@ export default function LinksPage() {
   };
 
   const handleDelete = async (code: string) => {
-    if (!confirm("Are you sure you want to delete this link?")) {
-      return;
-    }
-
     try {
       const response = await fetch(`/api/links/${code}`, {
         method: "DELETE",
@@ -69,6 +66,7 @@ export default function LinksPage() {
 
       setLinks(links.filter(link => link.code !== code));
       toast.success("Link deleted successfully!");
+      setDeleteConfirmCode(null);
     } catch (err) {
       toast.error("Failed to delete link. Please try again.");
     }
@@ -325,7 +323,7 @@ export default function LinksPage() {
                             <button
                               onClick={() => {
                                 setShowMoreOptions(null);
-                                handleDelete(link.code);
+                                setDeleteConfirmCode(link.code);
                               }}
                               className="flex items-center gap-2 w-full px-3 sm:px-4 py-2 text-xs sm:text-sm text-red-600 hover:bg-red-50"
                             >
@@ -425,6 +423,32 @@ export default function LinksPage() {
                 className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
               >
                 Update Link
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmCode && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4">
+          <div className="bg-white rounded-lg sm:rounded-xl p-4 sm:p-6 max-w-[340px] sm:max-w-md w-full">
+            <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-2 sm:mb-3">Delete Link</h2>
+            <p className="text-sm sm:text-base text-slate-600 mb-4 sm:mb-6">
+              Are you sure you want to delete this link? This action cannot be undone.
+            </p>
+            <div className="flex gap-2 sm:gap-3 justify-end">
+              <button
+                onClick={() => setDeleteConfirmCode(null)}
+                className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-md border border-slate-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDelete(deleteConfirmCode)}
+                className="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md"
+              >
+                Delete
               </button>
             </div>
           </div>
