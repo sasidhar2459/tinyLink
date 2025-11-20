@@ -217,7 +217,30 @@ export function LinkForm({ activeType, onTypeChange }: LinkFormProps = {}) {
           </div>
         </div>
 
-      
+        <div className="space-y-2">
+          <label
+            htmlFor="code"
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            Custom Short Code <span className="text-slate-400 font-normal">(optional)</span>
+          </label>
+          <div className="relative">
+            <input
+              id="code"
+              type="text"
+              placeholder="e.g., docs123"
+              className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              pattern="[A-Za-z0-9]{6,8}"
+              minLength={6}
+              maxLength={8}
+              title="6-8 alphanumeric characters"
+              data-testid="code-input"
+            />
+          </div>
+          <p className="text-xs text-slate-500">Leave empty to auto-generate a code (6-8 alphanumeric characters)</p>
+        </div>
 
         {error && (
           <div
@@ -258,8 +281,8 @@ export function LinkForm({ activeType, onTypeChange }: LinkFormProps = {}) {
 
       {/* Success Modal */}
       {createdItem && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4 md:p-6">
-          <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-[340px] sm:max-w-md mx-auto overflow-hidden">
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4 md:p-6 overflow-y-auto">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-[340px] sm:max-w-md mx-auto overflow-hidden my-auto max-h-[calc(100vh-24px)] sm:max-h-[calc(100vh-32px)] md:max-h-[calc(100vh-48px)] flex flex-col">
             {/* Header */}
             <div className="relative bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 sm:p-5 md:p-6 text-center">
               <button
@@ -281,15 +304,15 @@ export function LinkForm({ activeType, onTypeChange }: LinkFormProps = {}) {
             </div>
 
             {/* Content */}
-            <div className="p-4 sm:p-5 md:p-6">
+            <div className="p-4 sm:p-5 md:p-6 overflow-y-auto flex-1">
               {createdItem.type === "qr" ? (
                 // QR Code Display
                 <div className="space-y-3 sm:space-y-4">
                   <div className="flex justify-center bg-white p-3 sm:p-4 rounded-lg border-2 border-slate-100">
                     {qrCodeImage ? (
-                      <img src={qrCodeImage} alt="QR Code" className="w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64" />
+                      <img src={qrCodeImage} alt="QR Code" className="w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56" />
                     ) : (
-                      <div className="w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 flex items-center justify-center">
+                      <div className="w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56 flex items-center justify-center">
                         <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
                       </div>
                     )}
