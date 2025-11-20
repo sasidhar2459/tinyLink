@@ -406,9 +406,6 @@ GET /healthz
 
 This project was created as a take-home assignment.
 
-## Author
-
-Created with assistance from AI tools (ChatGPT/Claude) for the Aganitha take-home assignment.
 
 ---
 
